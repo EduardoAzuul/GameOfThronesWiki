@@ -1,0 +1,226 @@
+// Import necessary modules.
+// 'express' to create and manage the server.
+// 'axios' to make HTTP requests to external APIs.
+// 'path' and 'url' to handle file paths safely and ensure cross-platform compatibility.
+import express from 'express';
+import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// --- INITIAL SETUP ---
+
+// Create an instance of the Express application.
+const app = express();
+// Define the port on which the server will run. We use port 3000 as the default.
+const port = 3000;
+
+// Get the path of the current directory. This is necessary for Express to find our static files and EJS views.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- MIDDLEWARE ---
+
+// Set the template engine to EJS. This allows us to render dynamic HTML.
+app.set('view engine', 'ejs');
+// Tell EJS that the views (.ejs files) are located in the 'views' directory.
+app.set('views', path.join(__dirname, 'views'));
+// Serve static files (CSS, client-side JS, images) from the 'public' directory.
+app.use(express.static(path.join(__dirname, 'public')));
+// Enable middleware to parse form data (in x-www-form-urlencoded format). Essential for the search functionality.
+app.use(express.urlencoded({ extended: true }));
+
+// --- IN-MEMORY DATA STORAGE ---
+
+// 'mergedCharacters' will contain the final list of characters, already processed and merged.
+// We declare it here so it's accessible by all our routes once it's populated.
+let mergedCharacters = [];
+// 'isDataReady' will serve as a flag to know if the data from the APIs has been loaded.
+let isDataReady = false;
+
+// --- API MERGING LOGIC ---
+
+/**
+ * Normalizes a character's name to create a unique and consistent identification key.
+ * Removes extra spaces, converts to lowercase, and removes titles like 'Ser'.
+ * @param {string} name - The character's name.
+ * @returns {string} The normalized name.
+ */
+const getNormalizedNameKey = (name) => {
+    if (!name) return '';
+    return name.toLowerCase().replace(/ser /g, '').trim();
+};
+
+/**
+ * Main asynchronous function that gets data from both APIs,
+ * merges it, enriches it, and removes duplicates.
+ */
+async function fetchAndMergeData() {
+    console.log("Starting to fetch and merge data from APIs...");
+    try {
+        // URLs of the two APIs we are going to consume.
+        const thronesApiUrl = 'https://thronesapi.com/api/v2/Characters';
+        const iceAndFireApiUrl = 'https://anapioficeandfire.com/api/characters?pageSize=50'; // Using a large pageSize
+
+        // We make requests to both APIs in parallel for greater efficiency.
+        // Promise.allSettled waits for all promises to be resolved (either successfully or with an error).
+        const [thronesResult, iceAndFireResult] = await Promise.allSettled([
+            axios.get(thronesApiUrl),
+            axios.get(iceAndFireApiUrl) // Note: This API has pagination; for a real application, it would need to be handled.
+        ]);
+
+        // We use a Map for consolidation. It's more efficient and safer for keys than a plain object.
+        const characterMap = new Map();
+
+        // --- PROCESSING THE FIRST API (ThronesAPI) ---
+        // This will be our primary data source because it has images.
+        if (thronesResult.status === 'fulfilled' && thronesResult.value.data) {
+            thronesResult.value.data.forEach(char => {
+                const key = getNormalizedNameKey(char.fullName);
+                if (key) { // Only add characters with a name
+                    characterMap.set(key, {
+                        id: char.id,
+                        firstName: char.firstName,
+                        lastName: char.lastName,
+                        fullName: char.fullName,
+                        title: char.title,
+                        family: char.family,
+                        imageUrl: char.imageUrl,
+                        // Initialize fields that the other API might have
+                        born: '',
+                        died: '',
+                        aliases: [],
+                    });
+                }
+            });
+        }
+
+        // --- PROCESSING THE SECOND API (An API of Ice and Fire) ---
+        // We will use this one to enrich the data from the first.
+        if (iceAndFireResult.status === 'fulfilled' && iceAndFireResult.value.data) {
+            iceAndFireResult.value.data.forEach(char => {
+                const key = getNormalizedNameKey(char.name);
+                if (key) {
+                    const existingChar = characterMap.get(key);
+                    if (existingChar) {
+                        // The character already exists, we enrich their data if it's empty.
+                        if (!existingChar.born && char.born) existingChar.born = char.born;
+                        if (!existingChar.died && char.died) existingChar.died = char.died;
+                        
+                        // We combine and remove duplicates in the aliases.
+                        const combinedAliases = [...existingChar.aliases, ...char.aliases.filter(a => a)];
+                        existingChar.aliases = [...new Set(combinedAliases)];
+
+                    } else {
+                        // The character doesn't exist, we add them (without an image for now).
+                        characterMap.set(key, {
+                            id: char.url.split('/').pop(), // We use the ID from the URL as a fallback
+                            firstName: char.name.split(' ')[0],
+                            lastName: char.name.split(' ').slice(1).join(' '),
+                            fullName: char.name,
+                            title: char.titles.filter(t => t).join(', '),
+                            family: 'Unknown', // This API doesn't provide the house in a simple way
+                            imageUrl: '', // No image
+                            born: char.born,
+                            died: char.died,
+                            aliases: char.aliases.filter(a => a),
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Convert the character map back to an array.
+        mergedCharacters = Array.from(characterMap.values());
+        // We filter to ensure there are no entries without a full name.
+        mergedCharacters = mergedCharacters.filter(char => char.fullName);
+
+        console.log(`Merge completed. Total unique characters: ${mergedCharacters.length}`);
+        // Mark the data as ready to be served.
+        isDataReady = true;
+
+    } catch (error) {
+        console.error("Critical error while fetching data from APIs:", error.message);
+        // In case of a catastrophic failure, the application will have no data to display.
+        isDataReady = false;
+    }
+}
+
+// --- ROUTE DEFINITIONS ---
+
+// Middleware to check if data is ready before processing a request.
+const checkDataReady = (req, res, next) => {
+    if (!isDataReady) {
+        // If the data is not ready, we show a loading/error page.
+        return res.status(503).render('error', {
+            message: 'The server is starting up and loading information from the Seven Kingdoms. Please try again in a moment.',
+            title: 'Loading...'
+        });
+    }
+    next(); // If everything is okay, we continue to the next function in the route.
+};
+
+// Main route: Displays the first character in the list.
+app.get('/', checkDataReady, (req, res) => {
+    // We redirect to the character route with index 0.
+    res.redirect('/character/0');
+});
+
+// Route to display a specific character by their index in the array.
+app.get('/character/:id', checkDataReady, (req, res) => {
+    let index = parseInt(req.params.id, 10);
+    const total = mergedCharacters.length;
+
+    // Logic for circular navigation (if it reaches the end, it goes back to the beginning, and vice-versa).
+    if (index < 0) {
+        index = total - 1; // If the index is negative, we go to the last character.
+    } else if (index >= total) {
+        index = 0; // If the index exceeds the total, we go to the first character.
+    }
+    
+    const character = mergedCharacters[index];
+    
+    if (character) {
+        res.render('index', {
+            character: character,
+            currentIndex: index,
+            totalCharacters: total,
+            error: null
+        });
+    } else {
+        // This shouldn't happen if the array is not empty, but it's good practice to handle it.
+        res.status(404).render('error', {
+            message: 'No character found. The encyclopedia seems to be empty.',
+            title: 'Error'
+        });
+    }
+});
+
+// Route to handle character search.
+app.post('/search', checkDataReady, (req, res) => {
+    const searchTerm = req.body.characterName.toLowerCase().trim();
+    
+    // We search for the character in our merged array (case-insensitive search).
+    const foundIndex = mergedCharacters.findIndex(char => 
+        char.fullName.toLowerCase().includes(searchTerm)
+    );
+
+    if (foundIndex !== -1) {
+        // If we find it, we redirect to that character's page.
+        res.redirect(`/character/${foundIndex}`);
+    } else {
+        // If we don't find it, we render the error page.
+        res.render('error', {
+            message: `No character found with the name "${req.body.characterName}". The ravens brought no news of them.`,
+            title: 'Not Found'
+        });
+    }
+});
+
+// --- SERVER START ---
+
+// Start the server to listen on the defined port.
+app.listen(port, () => {
+    console.log(`Server started on http://localhost:${port}`);
+    // Once the server is listening, we call the function to load the data.
+    fetchAndMergeData();
+});
