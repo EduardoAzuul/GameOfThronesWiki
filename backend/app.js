@@ -1,30 +1,37 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const axios = require("axios");
-const cors = require("cors");
+// Importing required modules
+const express = require("express");         // Framework for creating web servers
+const bodyParser = require("body-parser");  // Middleware to parse incoming request bodies
+const axios = require("axios");             // HTTP client to make API requests
+const cors = require("cors");               // Middleware to enable Cross-Origin Resource Sharing
 
+// URLs for the APIs
 const URLTHRONES = "https://thronesapi.com/api/v2/Characters";
 const URLICE = "https://api.iceandfire.com/characters";
 
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware setup
+app.use(cors()); // Allow requests from other origins
+app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(bodyParser.json()); //Used to recive JSON data
-app.use(express.static("public"));
-app.set("view engine", "ejs");
+app.use(express.static("public"));// Serve static files from 'public' folder
+app.set("view engine", "ejs");// Set EJS as the templating engine
 
 const app = express();
 
 //Route 1: Base page
 app.get("/", (req, res) => {
+    // Render the index page with initial null values for characters and error
     res.render("index", { characters: null, error: null });
 });
 
+// Route 2: Get a single character by ID
 app.get("/api/characters/:id", async (req, res) => {
-    const id = req.params.id;
+    const id = req.params.id; // Get the character ID from the route parameter
     try {
-        const characters = await getAllCharacters();
+        const characters = await getAllCharacters(); // Fetch all characters
+        // Find the character with matching ID (converted to string for comparison)
         const character = characters.find(char => String(char.id) === id);
         
+        // If found, return JSON with character info and total count
         if (character) {
             res.json({
                 success: true,
@@ -32,25 +39,28 @@ app.get("/api/characters/:id", async (req, res) => {
                 totalCharacters: characters.length
             });
         } else {
+             // If not found, return 404 error
             res.status(404).json({
                 success: false,
                 error: "Character not found"
             });
         }
     } catch (error) {
+        // Catch any server or API errors
         res.status(500).json({ error: "Error fetching character data" });
     }
 });
 
-//Get's the count of all characters
+// Route 3: Get count of all characters
 app.get("/api/characters/count", async (req, res) => {
     try {
-        const characters = await getAllCharacters();
+        const characters = await getAllCharacters(); // Fetch all characters
         res.json({
             success: true,
-            count: characters.length
+            count: characters.length // Return total number of characters
         });
     } catch (error) {
+        // Handle server error
         res.status(500).json({
             success: false,
             error: "Server error"
@@ -58,11 +68,11 @@ app.get("/api/characters/count", async (req, res) => {
     }
 });
 
-//Using the API of GOT to get all characters
+// Function: Fetch Thrones characters
 async function getThronesCharacters() {
     try {
-        const response = await axios.get(URLTHRONES);
-        return response.data.map(char => ({ //Filtered to only get the necessary data
+        const response = await axios.get(URLTHRONES);   // Call Thrones API
+        return response.data.map(char => ({ //Map API data filtered to only get the necessary data
             id: char.id,
             image: char.imageUrl || char.image || null,
             firstName: char.firstName || "Unknown",
@@ -78,25 +88,26 @@ async function getThronesCharacters() {
         }));
     } catch (error) {
         console.error("Error fetching Thrones API:", error);
-        return [];
+        return [];  // Return empty array if error
     }
 }
 
 //Using the API of Ice and Fire to get all characters
 async function getIceAndFireCharacters(page = 1, pageSize = 50) {
     try {
-        let allChars = [];  
+        let allChars = [];  // Array to store all characters
 
+    // Loop through pages to fetch characters
     for (let page = 1; page <= pages; page++) {
             const response = await axios.get(`${URLICE}?page=${page}&pageSize=50`);
-            allChars = [...allChars, ...response.data];
+            allChars = [...allChars, ...response.data]; // Append fetched characters
         }
         
         return allChars
             .filter(char => char.name && char.name !== "") //Only characters with names
             .map(char => {
-                const id = char.url.split('/').pop();
-                const nameParts = char.name.split(' ');
+                const id = char.url.split('/').pop(); // Extract ID from URL    
+                const nameParts = char.name.split(' '); // Split name into first and last
                 
                 return {    //Return only necesary data
                     id: parseInt(id),
@@ -119,15 +130,16 @@ async function getIceAndFireCharacters(page = 1, pageSize = 50) {
     }
 }
 
+// Function: Merge characters from both APIs
 async function getMergedCharacters() {
-    if (mergedCharacters) {
-        return mergedCharacters;
+    if (mergedCharacters) { //Singleton design pattern
+        return mergedCharacters; // Return cached result if available
     }
 
     console.log("Fetching characters from both APIs...");
 
-    const thronesChars = await getThronesCharacters();
-    const iceChars = await getIceAndFireCharacters(10); 
+    const thronesChars = await getThronesCharacters();      // Thrones characters
+    const iceChars = await getIceAndFireCharacters(10);     // Ice & Fire characters (fetching first 10 pages, 50 each)
 
     console.log(`Thrones API: ${thronesChars.length} characters`);
     console.log(`Ice & Fire API: ${iceChars.length} characters`);
@@ -156,14 +168,14 @@ async function getMergedCharacters() {
     return mergedCharacters;
 }
 
-//Navegation
+// Route 4: Navigation between characters
 app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
     try {
-        const currentId = parseInt(req.params.currentId);
-        const direction = req.params.direction;
-        const characters = await getMergedCharacters();
+        const currentId = parseInt(req.params.currentId);   // Current character ID 
+        const direction = req.params.direction;             // Direction: next or prev
+        const characters = await getMergedCharacters();     // Get merged list
         
-        const currentIndex = characters.findIndex(char => char.id === currentId);
+        const currentIndex = characters.findIndex(char => char.id === currentId); // Find current index
         
         if (currentIndex === -1) {
             return res.status(404).json({
@@ -174,6 +186,7 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
         
         let newIndex;
         
+        // Determine new index based on direction
         if (direction === 'next') {
             newIndex = (currentIndex + 1) % characters.length;
         } else if (direction === 'prev') {
@@ -185,8 +198,9 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
             });
         }
         
-        const character = characters[newIndex];
+        const character = characters[newIndex];     // Get the new character
         
+        // Return JSON with new character data
         res.json({
             success: true,
             data: {
@@ -213,7 +227,7 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
     }
 });
 
-//ALWAYS KEEP AT THE END
+// Start the server (keep at the end)
 app.listen(3000, () => {
     console.log("Listening to port 3000");
 });
