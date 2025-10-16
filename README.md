@@ -1,4 +1,6 @@
-
+NECESARY COMANDS TO RUN IT
+npm init -y
+npm install --save-dev nodemon
 
 RUBRIC
 30% - Proper setup of the Node+Express project
