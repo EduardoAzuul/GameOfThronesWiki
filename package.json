@@ -11,7 +11,10 @@
     "type": "git",
     "url": "git+https://github.com/EduardoAzuul/GameOfThronesWiki.git"
   },
-  "author": "José Eduardo Moreno Paredes",
+  "authors": [
+    "José Eduardo Moreno Paredes", 
+    "Leonardo Etien Vizcaíno González"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/EduardoAzuul/GameOfThronesWiki/issues"
