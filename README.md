@@ -1,6 +1,9 @@
 NECESARY COMANDS TO RUN IT
 npm init -y
 npm install --save-dev nodemon
+npm install express
+npm install cors
+npm install axios
 
 RUBRIC
 30% - Proper setup of the Node+Express project
@@ -28,7 +31,7 @@ Born & Dead date (If available)
 Title(s)
 Aliases
 Family
-Family crest
+Family crest  (Escudos)
 Some of this things have multiple entries, so you can decide how you want to display them. (Suggestion: Look at the Bootstrap elements available and study the option of using them)
 
 Suggestions:
