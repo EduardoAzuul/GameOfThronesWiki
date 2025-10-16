@@ -3,10 +3,13 @@ const express = require("express");         // Framework for creating web server
 const bodyParser = require("body-parser");  // Middleware to parse incoming request bodies
 const axios = require("axios");             // HTTP client to make API requests
 const cors = require("cors");               // Middleware to enable Cross-Origin Resource Sharing
+const path = require("path");               // Utility for handling and transforming file paths
 
 // URLs for the APIs
 const URLTHRONES = "https://thronesapi.com/api/v2/Characters";
 const URLICE = "https://api.iceandfire.com/characters";
+
+const app = express();
 
 // Middleware setup
 app.use(cors()); // Allow requests from other origins
@@ -14,8 +17,10 @@ app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(bodyParser.json()); //Used to recive JSON data
 app.use(express.static("public"));// Serve static files from 'public' folder
 app.set("view engine", "ejs");// Set EJS as the templating engine
+app.set("views", path.join(__dirname, "../frontend"));
 
-const app = express();
+
+
 
 //Route 1: Base page
 app.get("/", (req, res) => {

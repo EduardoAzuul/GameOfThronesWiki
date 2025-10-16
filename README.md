@@ -4,6 +4,7 @@ npm install --save-dev nodemon
 npm install express
 npm install cors
 npm install axios
+npm install ejs
 
 RUBRIC
 30% - Proper setup of the Node+Express project

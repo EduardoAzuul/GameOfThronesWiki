@@ -2,10 +2,10 @@
   "name": "gotwiki",
   "version": "1.0.0",
   "description": "RUBRIC\r 30% - Proper setup of the Node+Express project\r 30% - Use of correct API calls\r 20% - Proper display in Mobile and full screen\r 15% - Design\r   5% - Implementation of EJS \r   5% - Proper use of colors scheme\r   5% - Completeness",
-  "main": "index.js",
+  "main": "backend/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":  "nodemon index.js"
+    "start": "nodemon backend/app.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "dependencies": {
     "axios": "^1.12.2",
     "cors": "^2.8.5",
+    "ejs": "^3.1.10",
     "express": "^5.1.0"
   },
   "homepage": "https://github.com/EduardoAzuul/GameOfThronesWiki#readme",
