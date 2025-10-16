@@ -21,6 +21,8 @@ app.set("views", path.join(__dirname, "../frontend"));
 
 
 
+// Cache for merged characters (Singleton pattern)
+let mergedCharacters = null;
 
 //Route 1: Base page
 app.get("/", (req, res) => {
@@ -28,38 +30,12 @@ app.get("/", (req, res) => {
     res.render("index", { characters: null, error: null });
 });
 
-// Route 2: Get a single character by ID
-app.get("/api/characters/:id", async (req, res) => {
-    const id = req.params.id; // Get the character ID from the route parameter
-    try {
-        const characters = await getAllCharacters(); // Fetch all characters
-        // Find the character with matching ID (converted to string for comparison)
-        const character = characters.find(char => String(char.id) === id);
-        
-        // If found, return JSON with character info and total count
-        if (character) {
-            res.json({
-                success: true,
-                data: character,
-                totalCharacters: characters.length
-            });
-        } else {
-             // If not found, return 404 error
-            res.status(404).json({
-                success: false,
-                error: "Character not found"
-            });
-        }
-    } catch (error) {
-        // Catch any server or API errors
-        res.status(500).json({ error: "Error fetching character data" });
-    }
-});
+
 
 // Route 3: Get count of all characters
 app.get("/api/characters/count", async (req, res) => {
     try {
-        const characters = await getAllCharacters(); // Fetch all characters
+        const characters = await getMergedCharacters(); // Fetch all characters
         res.json({
             success: true,
             count: characters.length // Return total number of characters
@@ -98,10 +74,9 @@ async function getThronesCharacters() {
 }
 
 //Using the API of Ice and Fire to get all characters
-async function getIceAndFireCharacters(page = 1, pageSize = 50) {
+async function getIceAndFireCharacters(pages = 10) {
     try {
         let allChars = [];  // Array to store all characters
-
     // Loop through pages to fetch characters
     for (let page = 1; page <= pages; page++) {
             const response = await axios.get(`${URLICE}?page=${page}&pageSize=50`);
@@ -229,6 +204,66 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
             success: false,
             error: "Server error"
         });
+    }
+});
+
+// Route 5: Get a single character by name
+app.get("/api/characters/search/:name", async (req, res) => {
+    // Decode URL encoding
+    const name = decodeURIComponent(req.params.name); // Get the character ID from the route parameter
+    
+    try {
+        const characters = await getMergedCharacters(); // Fetch all characters
+        // Find the character with matching ID (converted to string for comparison)
+        const character = characters.find(char => // Decode URL encoding
+            char.fullName.toLowerCase().trim() === name.toLowerCase().trim()
+        );
+        
+        // If found, return JSON with character info and total count
+        if (character) {
+            res.json({
+                success: true,
+                data: character,
+                totalCharacters: characters.length
+            });
+        } else {
+             // If not found, return 404 error
+            res.status(404).json({
+                success: false,
+                error: "Character not found"
+            });
+        }
+    } catch (error) {
+        // Catch any server or API errors
+        res.status(500).json({ error: "Error fetching character data" });
+    }
+});
+
+// Route 2: Get a single character by ID
+app.get("/api/characters/:id", async (req, res) => {
+    const id = req.params.id; // Get the character ID from the route parameter
+    try {
+        const characters = await getMergedCharacters(); // Fetch all characters
+        // Find the character with matching ID (converted to string for comparison)
+        const character = characters.find(char => String(char.id) === id);
+        
+        // If found, return JSON with character info and total count
+        if (character) {
+            res.json({
+                success: true,
+                data: character,
+                totalCharacters: characters.length
+            });
+        } else {
+             // If not found, return 404 error
+            res.status(404).json({
+                success: false,
+                error: "Character not found"
+            });
+        }
+    } catch (error) {
+        // Catch any server or API errors
+        res.status(500).json({ error: "Error fetching character data" });
     }
 });
 
