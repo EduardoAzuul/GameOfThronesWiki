@@ -1,4 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Thrones Characters</title>
+
 <%- include('views/header') %>
+
+<body>
+    <div class="container">
+        <h1>Game of Thrones Characters</h1>
+        
+        <div class="stats" id="stats">
+            <span id="totalCharacters">Loading...</span>
+        </div>
+
+        <div id="characterList" class="character-grid">
+            <div class="loading">Loading characters...</div>
+        </div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="previousPage()" disabled>← Previous</button>
+            <span class="page-info">
+                Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+            </span>
+            <button id="nextBtn" onclick="nextPage()">Next →</button>
+        </div>
+    </div>
+
+</body>
+
 
 
 <%- include('views/footer') %>
+
+</html>

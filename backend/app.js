@@ -239,6 +239,23 @@ app.get("/api/characters/search/:name", async (req, res) => {
     }
 });
 
+// Route 6: Get all characters
+app.get("/api/characters", async (req, res) => {
+    try {
+        const characters = await getMergedCharacters();
+        res.json({
+            success: true,
+            data: characters,
+            totalCharacters: characters.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Error fetching characters"
+        });
+    }
+});
+
 // Route 2: Get a single character by ID
 app.get("/api/characters/:id", async (req, res) => {
     const id = req.params.id; // Get the character ID from the route parameter
