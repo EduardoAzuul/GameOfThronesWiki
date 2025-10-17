@@ -1,0 +1,129 @@
+:root {
+    --color-oro: #D4AF37;
+    --color-acero: #adb5bd;
+    --color-fondo-carta: #1c1c1c;
+}
+
+body {
+    background-color: #080808;
+    background-image: url('https://www.transparenttextures.com/patterns/dark-paths.png');
+    font-family: 'Lato', sans-serif;
+    color: var(--color-acero);
+}
+
+.titulo-enciclopedia {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--color-oro);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    letter-spacing: 2px;
+}
+
+.search-form .form-control {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--color-acero);
+    color: white;
+}
+
+.search-form .form-control:focus {
+    background-color: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+    border-color: var(--color-oro);
+}
+
+.btn-buscar {
+    background-color: var(--color-oro);
+    border-color: var(--color-oro);
+    color: #000;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-buscar:hover {
+    background-color: #fff;
+    color: #000;
+    box-shadow: 0 0 10px #fff;
+}
+
+.character-card {
+    background-color: var(--color-fondo-carta);
+    border: 1px solid #444;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    transition: transform 0.3s ease;
+}
+
+.character-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+    border-bottom: 2px solid var(--color-oro);
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 400px;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10rem;
+    color: #444;
+    font-family: 'Cinzel', serif;
+    border-radius: 15px 15px 0 0;
+    border-bottom: 2px solid var(--color-oro);
+}
+
+.character-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--color-oro);
+}
+
+.character-title {
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--color-acero);
+}
+
+.details p {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-left: 3px solid var(--color-oro);
+    margin-bottom: 8px;
+    border-radius: 0 5px 5px 0;
+}
+
+.counter {
+    background-color: var(--color-oro);
+    color: #000;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.nav-btn {
+    background: none;
+    border: 2px solid var(--color-oro);
+    color: var(--color-oro);
+    font-family: 'Cinzel', serif;
+    padding: 10px 30px;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background-color: var(--color-oro);
+    color: #000;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.7);
+}
+
+.welcome-message, .error-message {
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}

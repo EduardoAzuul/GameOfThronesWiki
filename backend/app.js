@@ -24,6 +24,93 @@ app.set("views", path.join(__dirname, "../frontend"));
 // Cache for merged characters (Singleton pattern)
 let mergedCharacters = null;
 
+////////////////////////////////////////////////////////////////////// Funciones modificadas por Vizqui
+
+//Render the index search page
+app.get("/",async (req, res) => {
+    try{
+        const characters = await getMergedCharacters(); // Preload characters
+        // Render the search page without any characters or error at first
+        res.render("search", {
+            character: null,
+            error: null,
+            totalCharacters: characters.length // Pass total character count
+        });
+    } catch (error) { // Handle any errors during data fetching
+        res.render("search", { // Render the search page with error message
+            character: null,
+            error: "Couldn't load the characters data.",
+            totalCharacters: 0 // No characters loaded
+        });
+    }
+});
+
+// Render the search results page for a character by name
+app.get("/search/:name", async (req, res) =>{
+    try{
+        const name = decodeURIComponent(req.params.name); // Decode URL encoding
+        const characters = await getMergedCharacters(); // Preload characters
+        const character = characters.find(
+            (char) => char.fullName.toLowerCase().trim() === name.toLowerCase().trim()
+        );
+
+        if (character) {
+            // If it is found, it render the page with the character data
+            res.render("search", {
+                character: character,
+                totalCharacters: characters.length,
+                error: null
+            });
+        } else {
+            // If not found, render the page with an error message
+            res.render("search", {
+                character: null,
+                totalCharacters: characters.length,
+                error: `Character "${name}" not found.`,
+            });
+        }
+    } catch (error) {
+        res.render("search", { // Render the search page with error message
+            character: null,
+            totalCharacters: 0,
+            error: "Sorry, there was a server error while searching.",
+        });
+    }
+});
+
+// Render the page for an individual character by ID
+app.get("/character/:id", async (req, res) => {
+    try { // Try to fetch character data
+        const id = parseInt(req.params.id); // Get the character ID from the route parameter
+        const characters = await getMergedCharacters(); // Fetch all characters
+        const character = characters.find((char) => char.id === id); // Find character by ID
+
+        if (character) {
+            // If found, render the page with character data
+            res.render("search", {
+                character: character,
+                totalCharacters: characters.length,
+                error: null,
+            });
+        } else {
+            // If not found, render the page with an error message
+            res.render("search", {
+                character: null,
+                totalCharacters: characters.length,
+                error: `Character with ID "${id}" not found.`,
+            });
+        }
+    } catch (error) { // Handle any server errors
+        res.render("search", {
+            character: null,
+            totalCharacters: 0,
+            error: "Server error while fetching character.",
+        });
+    }
+});
+
+////////////////////////////////////////////////////////////////////// Funciones modificadas por Vizqui
+
 //Route 1: Base page
 app.get("/", (req, res) => {
     // Render the index page with initial null values for characters and error

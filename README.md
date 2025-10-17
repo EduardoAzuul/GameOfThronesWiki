@@ -6,6 +6,8 @@ npm install cors
 npm install axios
 npm install ejs
 
+for execution terminal: npm start
+
 RUBRIC
 30% - Proper setup of the Node+Express project
 30% - Use of correct API calls
