@@ -27,20 +27,31 @@ let mergedCharacters = null;
 ////////////////////////////////////////////////////////////////////// Funciones modificadas por Vizqui
 
 //Render the index search page
-app.get("/",async (req, res) => {
-    try{
-        const characters = await getMergedCharacters(); // Preload characters
-        // Render the search page without any characters or error at first
-        res.render("search", {
-            character: null,
-            error: null,
-            totalCharacters: characters.length // Pass total character count
+app.get("/", async (req, res) => {
+    try {
+        const characters = await getMergedCharacters();
+        const page = parseInt(req.query.page) || 1;
+        const charactersPerPage = 20;
+        const startIndex = (page - 1) * charactersPerPage;
+        const endIndex = startIndex + charactersPerPage;
+        
+        const paginatedCharacters = characters.slice(startIndex, endIndex);
+        const totalPages = Math.ceil(characters.length / charactersPerPage);
+        
+        res.render("index", { 
+            characters: paginatedCharacters,
+            totalCharacters: characters.length,
+            currentPage: page,
+            totalPages: totalPages,
+            error: null 
         });
-    } catch (error) { // Handle any errors during data fetching
-        res.render("search", { // Render the search page with error message
-            character: null,
-            error: "Couldn't load the characters data.",
-            totalCharacters: 0 // No characters loaded
+    } catch (error) {
+        res.render("index", { 
+            characters: null,
+            totalCharacters: 0,
+            currentPage: 1,
+            totalPages: 0,
+            error: "Error al cargar los personajes." 
         });
     }
 });
