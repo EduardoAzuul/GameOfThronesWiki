@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/stylesheets/style.css">
+        <title>Game of Thrones Encyclopedia: <%= character ? character.fullName : 'Search' %></title>
+    </head>
+    
+    <body>
+        <div class="container">
+            <!-- Here will display the character information -->
+            <h1>Search for a Character</h1>
+            
+            <!-- Search form to find a character by name -->
+            <form id="search-form" class="search-form">
+                <input type="text" name="characterName" class="search-input" placeholder="Find a character" required>
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+            
+            <!-- Display character information if a character exists -->
+            <% if (character) { %>
+                <div class="character-card">
+                    <!-- Display character image if available, otherwise show placeholder -->
+                    <% if (character.image) { %>
+                        <img src="<%= character.image %>" alt="Image of <%= character.fullName %>" class="character-image">
+                    <% } else { %>
+                        <div class="character-image">?</div>
+                        <p>No Image Available</p>
+                    <% } %>
+                    
+                    <!-- Character name and title -->
+                    <h1><%= character.fullName %></h1>
+                    <h2><%= character.titles %></h2>
+                    
+                    <!-- All the character details section -->
+                    <div class="details">
+                        <p><strong>ID:</strong> <%= character.id %></p>
+                        <p><strong>Family:</strong> <%= character.family %></p>
+                        <p><strong>Born:</strong> <%= character.born %></p>
+                        <p><strong>Died:</strong> <%= character.died %></p>
+                        <p><strong>Aliases:</strong> <%= character.aliases %></p>
+                    </div>
+                    
+                    <!-- Character counter showing current position -->
+                    <div class="counter">
+                        <%= character.id %> of <%= totalCharacters %>
+                    </div>
+                </div>
+                
+                <!-- Navigation buttons to browse characters -->
+                <!-- Store the character ID in a data attribute for JavaScript access -->
+                <div class="navigation" data-character-id="<%= character.id %>">
+                    <button id="prev-btn" class="nav-btn">Previous</button>
+                    <button id="next-btn" class="nav-btn">Next</button>
+                </div>
+            <% } %>
+
+            <!-- Display error message if there's an error -->
+            <% if (error) { %>
+                <p class="error-message"><%= error %></p>
+            <% } %>
+
+        </div>
+
+        <script>
+            // Select the DOM elements for search functionality
+            const searchForm = document.querySelector("#search-form");
+            const searchInput = document.querySelector(".search-input");
+            
+            // Add an event listener to handle form submission
+            searchForm.addEventListener("submit", (event) => {
+                // Prevent the default form submission behavior
+                event.preventDefault();
+                
+                // Get the search query from the input field
+                // The searchInput.value obtains the text entered by the user
+                // trim() removes any leading or trailing whitespace so that only meaningful input is considered
+                const characterName = searchInput.value.trim();
+                
+                // If the query is not empty, redirect to the search endpoint
+                if (characterName) {
+                    // Redirect to the search endpoint with the character name
+                    // window.location.href changes the current page to the specified URL
+                    // encodeURIComponent ensures that special characters in the name are properly encoded for the URL
+                    window.location.href = `/search/${encodeURIComponent(characterName)}`;
+                }
+            });
+            
+            // Navigation buttons functionality
+            // Select the navigation buttons (they only exist when a character is loaded)
+            const prevButton = document.querySelector("#prev-btn");
+            const nextButton = document.querySelector("#next-btn");
+            
+            // Check if navigation buttons exist before adding event listeners
+            if (prevButton && nextButton) {
+                // Get the current character ID from the data attribute
+                const navigationDiv = document.querySelector('.navigation');
+                const currentId = parseInt(navigationDiv.dataset.characterId);
+                
+                // Function to handle navigation between characters
+                const navigate = (direction) => {
+                    // Make a fetch request to the API navigation endpoint in app.js
+                    // The direction parameter will be either "prev" or "next"
+                    fetch(`/api/character/navigate/${direction}/${currentId}`)
+                        .then(response => response.json()) // Parse the JSON response
+                        .then(data => { // Handle the data received from the server
+                            if (data.success) {
+                                // If successful, redirect to the character page with the new ID
+                                window.location.href = `/character/${data.data.id}`;
+                            } else {
+                                // Log the error to the console if something went wrong
+                                console.error("Error:", data.error);
+                            }
+                        })
+                        .catch(error => {
+                            // Catch any network or parsing errors
+                            console.error("Navigation error:", error);
+                        });
+                };
+                
+                // Add event listeners to the navigation buttons
+                // When clicked, they call the navigate function with the appropriate direction
+                prevButton.addEventListener("click", () => navigate("prev"));
+                nextButton.addEventListener("click", () => navigate("next"));
+            }
+            
+        </script>
+    </body>
+</html>
