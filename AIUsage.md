@@ -126,3 +126,5 @@ AI was used to compare the requirementes specified and the displayed information
 AI was used to ask questions about the API code implementation, due to it giving errors
 
 AI was used to manage errors, to find a quickers solution. It was not used as a subtitude of the programers
+
+AI was used to achive a neon like effect when hovering over the buttons and cards
