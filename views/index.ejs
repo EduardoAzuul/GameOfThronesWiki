@@ -52,9 +52,6 @@
                                     <li><strong>Family:</strong> <%= character.family %></li>
                                     <li><strong>Born:</strong> <%= character.born %></li>
                                     <li><strong>Died:</strong> <%= character.died %></li>
-                                    <% if (character.culture && character.culture !== 'Unknown') { %>
-                                        <li><strong>Culture:</strong> <%= character.culture %></li>
-                                    <% } %>
                                 </ul>
                             </div>
 
@@ -87,18 +84,6 @@
                                 <div class="info-section">
                                     <h5><i class="bi bi-film"></i> Played By</h5>
                                     <p class="mb-0"><%= character.playedBy.join(', ') %></p>
-                                </div>
-                            <% } %>
-
-                            <!-- TV Series Appearances (Ice & Fire API) -->
-                            <% if (character.tvSeries && character.tvSeries.length > 0 && character.tvSeries[0] !== '') { %>
-                                <div class="info-section">
-                                    <h5><i class="bi bi-tv"></i> TV Series Appearances</h5>
-                                    <div class="badge-list">
-                                        <% character.tvSeries.forEach(season => { %>
-                                            <span class="badge bg-secondary"><%= season %></span>
-                                        <% }); %>
-                                    </div>
                                 </div>
                             <% } %>
 
