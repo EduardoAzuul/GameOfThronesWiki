@@ -114,3 +114,11 @@ The header itself remains fixed so it stays visible when scrolling, but the rest
 
 Synchronize those two layers.
 If the header’s height can change (for example, it’s responsive or collapsible), you update the reserved space dynamically using JavaScript or CSS variables so that the offset always matches the header’s real size.
+
+
+AI was also used to comment the code
+
+AI was also used to add styles in boostrap, helping us change form regular css into a boostrap aplication
+AI was also used to apply the boostrap styles into the ejs files
+
+AI was used to compare the requirementes specified and the displayed information in order to make sure the whole rubric was covered

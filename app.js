@@ -19,11 +19,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // --- Character Cache ---
+// This will store the merged character data to avoid repeated API calls
 let cachedCharacters = null;
 
-// =================================================================
-// RENDERING ROUTES
-// =================================================================
+
+//************************* RENDERING ROUTES    ***********************
+
 
 // MAIN ROUTE (/): Displays the complete gallery or a character's detail
 app.get("/", async (req, res) => {
@@ -183,10 +184,6 @@ const mapThronesCharacter = (char) => ({
     family: char.family || "Unknown house",
     allegiances: [],
     
-    // Additional metadata
-    culture: "Unknown",
-    playedBy: [],
-    tvSeries: [],
     
     source: "ThronesAPI"
 });
@@ -220,11 +217,6 @@ const mapIceFireCharacter = (char) => {
             ? "See allied houses" 
             : "No known house",
         allegiances: char.allegiances || [], // House URLs
-        
-        // Additional metadata
-        culture: char.culture || "Unknown",
-        playedBy: char.playedBy && char.playedBy.length > 0 ? char.playedBy : [],
-        tvSeries: char.tvSeries && char.tvSeries.length > 0 ? char.tvSeries : [],
         
         source: "IceAndFireAPI"
     };
