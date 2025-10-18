@@ -127,3 +127,32 @@ body {
     align-items: center;
     text-align: center;
 }
+
+.character-gallery-card {
+    background-color: var(--color-fondo-carta);
+    border: 1px solid #333;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    text-decoration: none;
+}
+.character-gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--color-oro);
+}
+.gallery-img {
+    height: 250px;
+    object-fit: cover;
+}
+.gallery-title {
+    font-family: 'Cinzel', serif;
+    color: var(--color-oro);
+}
+.pagination .page-item .page-link {
+    background-color: var(--color-fondo-carta);
+    border-color: #444;
+    color: var(--color-oro);
+}
+.pagination .page-item.active .page-link {
+    background-color: var(--color-oro);
+    border-color: var(--color-oro);
+    color: #121212;
+}

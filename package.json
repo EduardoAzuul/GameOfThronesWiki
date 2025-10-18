@@ -2,16 +2,17 @@
   "name": "gotwiki",
   "version": "1.0.0",
   "description": "RUBRIC\r 30% - Proper setup of the Node+Express project\r 30% - Use of correct API calls\r 20% - Proper display in Mobile and full screen\r 15% - Design\r   5% - Implementation of EJS \r   5% - Proper use of colors scheme\r   5% - Completeness",
-  "main": "backend/app.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon backend/app.js"
+    "start": "node --openssl-legacy-provider app.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/EduardoAzuul/GameOfThronesWiki.git"
   },
   "author": "José Eduardo Moreno Paredes",
+  "collaborator": "Leonardo Etien Vizcaíno González",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/EduardoAzuul/GameOfThronesWiki/issues"
