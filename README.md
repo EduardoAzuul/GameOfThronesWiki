@@ -1,4 +1,4 @@
-NECESARY COMANDS TO RUN IT
+NECESSARY COMANDS TO RUN IT
 npm init -y
 npm install --save-dev nodemon
 npm install express
@@ -13,11 +13,11 @@ RUBRIC
 30% - Use of correct API calls
 20% - Proper display in Mobile and full screen
 15% - Design
-  5% - Implementation of EJS 
-  5% - Proper use of colors scheme
-  5% - Completeness
+5% - Implementation of EJS 
+5% - Proper use of colors scheme
+5% - Completeness
 
-  GoT Ultimate Guide
+GoT Ultimate Guide
 Your challenge is to build a GoT Ultimate guide to find all the important information of your favorite Game of Thrones characters. Using the Thrones API or the API of Ice & Fire you will have access to all the available information regarding all the families fighting for sitting on the Iron Throne. The goal of this project is for you to have a working enciclopedia to consult on all the suitor for the throne; for this purpose you will need to:
 
 Build a UI that best represent the content shown in a catalog. It does not have to have a specific design, but it should contain all the features described below.
@@ -34,7 +34,9 @@ Born & Dead date (If available)
 Title(s)
 Aliases
 Family
-Family crest  (Escudos)
+Family crest  (Escudos). 
+  ->>>>>>The APIs asigned to this proyect, do not contain the information of the family Crest
+
 Some of this things have multiple entries, so you can decide how you want to display them. (Suggestion: Look at the Bootstrap elements available and study the option of using them)
 
 Suggestions:

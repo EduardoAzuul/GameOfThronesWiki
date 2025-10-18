@@ -1,29 +1,29 @@
-// --- LÓGICA DE BÚSQUEDA ---
+// --- SEARCH LOGIC ---
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector(".search-input");
 
 if (searchForm) {
     searchForm.addEventListener("submit", (event) => {
-        // Previene la acción por defecto del formulario (recargar la página).
+        // Prevents the form’s default behavior (reloading the page).
         event.preventDefault();
         
         const characterName = searchInput.value.trim();
         
         if (characterName) {
-            // --- DIAGNÓSTICO EN NAVEGADOR ---
-            console.log(`Búsqueda iniciada para: "${characterName}"`);
+            // --- BROWSER DIAGNOSTICS ---
+            console.log(`Search started for: "${characterName}"`);
             const targetUrl = `/search/${encodeURIComponent(characterName)}`;
-            console.log(`Redirigiendo a: ${targetUrl}`);
+            console.log(`Redirecting to: ${targetUrl}`);
             
-            // Esta es la línea que cambia la URL en el navegador.
+            // This line changes the URL in the browser.
             window.location.href = targetUrl;
         } else {
-            console.log("El campo de búsqueda está vacío.");
+            console.log("The search field is empty.");
         }
     });
 }
 
-// --- LÓGICA DE NAVEGACIÓN ---
+// --- NAVIGATION LOGIC ---
 const prevButton = document.querySelector("#prev-btn");
 const nextButton = document.querySelector("#next-btn");
 
@@ -38,13 +38,12 @@ if (prevButton && nextButton) {
                 if (data.success) {
                     window.location.href = `/character/${data.data.id}`;
                 } else {
-                    console.error("Error de navegación desde la API:", data.error);
+                    console.error("Navigation error from API:", data.error);
                 }
             })
-            .catch(error => console.error("Error de conexión en fetch:", error));
+            .catch(error => console.error("Connection error in fetch:", error));
     };
 
     prevButton.addEventListener("click", () => navigate("prev"));
     nextButton.addEventListener("click", () => navigate("next"));
 }
-

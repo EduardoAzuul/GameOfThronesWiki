@@ -1,16 +1,16 @@
-// --- Importación de Módulos ---
+// --- Module Imports ---
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 const cors = require("cors");
 
-// --- Constantes de la API ---
+// --- API Constants ---
 const URL_THRONES = "https://thronesapi.com/api/v2/Characters";
 const URL_ICE_FIRE = "https://www.anapioficeandfire.com/api/characters";
 
 const app = express();
 
-// --- Configuración de Express (Middleware) ---
+// --- Express Configuration (Middleware) ---
 app.use(cors());
 app.use(express.static("public"));
 app.set("view engine", "ejs");
@@ -18,14 +18,14 @@ app.set("views", "views");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// --- Caché para los Personajes ---
+// --- Character Cache ---
 let cachedCharacters = null;
 
 // =================================================================
-// RUTAS DE RENDERIZADO
+// RENDERING ROUTES
 // =================================================================
 
-// RUTA PRINCIPAL (/): Muestra la galería completa o el detalle de un personaje.
+// MAIN ROUTE (/): Displays the complete gallery or a character's detail
 app.get("/", async (req, res) => {
     try {
         const characters = await getMergedCharacters();
@@ -39,37 +39,37 @@ app.get("/", async (req, res) => {
         res.render("index", {
             character: null,
             allCharacters: [],
-            error: "No se pudieron cargar los datos de los personajes.",
+            error: "Could not load character data.",
             totalCharacters: 0
         });
     }
 });
 
-// RUTA DE BÚSQUEDA (/search/:name): Ahora con búsqueda flexible.
-app.get("/search/:name", async (req, res) => {
+// SEARCH ROUTE (/search): Now with flexible search
+app.get("/search", async (req, res) => {
     try {
-        // 1. Preparamos el término de búsqueda: lo pasamos a minúsculas y quitamos espacios.
-        const searchTerm = decodeURIComponent(req.params.name).toLowerCase().trim();
+        // 1. Prepare the search term: convert to lowercase and trim spaces
+        const searchTerm = req.query.name.toLowerCase().trim();
         const allCharacters = await getMergedCharacters();
 
-        // 2. Usamos .filter() en lugar de .find().
-        //    .filter() devuelve un ARRAY con TODAS las coincidencias, no solo la primera.
-        //    La condición ahora es .includes(), que busca el texto en cualquier parte del nombre.
+        // 2. Use .filter() instead of .find()
+        //    .filter() returns an ARRAY with ALL matches, not just the first one
+        //    The condition now uses .includes(), which searches for text anywhere in the name
         const foundCharacters = allCharacters.filter(
             (char) => char.fullName.toLowerCase().includes(searchTerm)
         );
 
-        // 3. Evaluamos los resultados para dar la mejor respuesta al usuario.
+        // 3. Evaluate the results to give the best response to the user
         if (foundCharacters.length > 1) {
-            // -- MÚLTIPLES RESULTADOS: Mostramos una galería solo con los personajes encontrados.
+            // -- MULTIPLE RESULTS: Show a gallery with only the found characters
             res.render("index", {
                 character: null,
-                allCharacters: foundCharacters, // ¡Le pasamos solo los resultados del filtro!
+                allCharacters: foundCharacters, // Pass only the filter results!
                 totalCharacters: allCharacters.length,
-                error: `Se encontraron ${foundCharacters.length} personajes para "${req.params.name}"`, // Mensaje informativo
+                error: `Found ${foundCharacters.length} characters for "${req.query.name}"`, // Informative message
             });
         } else if (foundCharacters.length === 1) {
-            // -- UN SOLO RESULTADO: Llevamos al usuario directamente a la tarjeta de detalle.
+            // -- SINGLE RESULT: Take the user directly to the detail card
             res.render("index", {
                 character: foundCharacters[0],
                 allCharacters: null,
@@ -77,27 +77,27 @@ app.get("/search/:name", async (req, res) => {
                 error: null,
             });
         } else {
-            // -- CERO RESULTADOS: Mostramos la galería completa de nuevo con un error claro.
+            // -- ZERO RESULTS: Show the complete gallery again with a clear error
             res.render("index", {
                 character: null,
-                allCharacters: allCharacters, // Le pasamos todos para que no se quede vacía la página.
+                allCharacters: allCharacters, // Pass all so the page doesn't stay empty
                 totalCharacters: allCharacters.length,
-                error: `No se encontró ningún personaje que coincida con "${req.params.name}".`,
+                error: `No character found matching "${req.query.name}".`,
             });
         }
     } catch (error) {
-        // -- ERROR DE SERVIDOR: Manejamos cualquier otro posible fallo.
-        console.error("Error en la ruta de búsqueda flexible:", error);
+        // -- SERVER ERROR: Handle any other possible failure
+        console.error("Error in flexible search route:", error);
         res.render("index", {
             character: null,
             allCharacters: [],
             totalCharacters: 0,
-            error: "Ocurrió un error en el servidor durante la búsqueda.",
+            error: "A server error occurred during the search.",
         });
     }
 });
 
-// RUTA DE PERSONAJE POR ID (/character/:id):
+// CHARACTER BY ID ROUTE (/character/:id):
 app.get("/character/:id", async (req, res) => {
     try {
         const id = parseInt(req.params.id);
@@ -116,7 +116,7 @@ app.get("/character/:id", async (req, res) => {
                 character: null,
                 allCharacters: characters,
                 totalCharacters: characters.length,
-                error: `Personaje con ID "${id}" no encontrado.`,
+                error: `Character with ID "${id}" not found.`,
             });
         }
     } catch (error) {
@@ -124,14 +124,14 @@ app.get("/character/:id", async (req, res) => {
             character: null,
             allCharacters: [],
             totalCharacters: 0,
-            error: "Error del servidor al buscar el personaje.",
+            error: "Server error while searching for the character.",
         });
     }
 });
 
 
 // =================================================================
-// RUTA DE API (Solo para navegación)
+// API ROUTE (Only for navigation)
 // =================================================================
 
 app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
@@ -142,7 +142,7 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
         const currentIndex = characters.findIndex(char => char.id === currentId);
 
         if (currentIndex === -1) {
-            return res.status(404).json({ success: false, error: "Personaje actual no encontrado" });
+            return res.status(404).json({ success: false, error: "Current character not found" });
         }
 
         let newIndex = (direction === 'next')
@@ -151,85 +151,150 @@ app.get("/api/character/navigate/:direction/:currentId", async (req, res) => {
 
         res.json({ success: true, data: characters[newIndex] });
     } catch (error) {
-        res.status(500).json({ success: false, error: "Error del servidor en la navegación" });
+        res.status(500).json({ success: false, error: "Server error in navigation" });
     }
 });
 
 
 // =================================================================
-// LÓGICA DE OBTENCIÓN Y FUSIÓN DE DATOS
+// DATA FETCHING AND MERGING LOGIC
 // =================================================================
 
-// Función para normalizar los datos de la API de Thrones
+// Function to normalize data from the Thrones API
 const mapThronesCharacter = (char) => ({
-    fullName: char.fullName || `${char.firstName} ${char.lastName}`,
+    // Basic information
+    id: char.id,
+    firstName: char.firstName || "Unknown",
+    lastName: char.lastName || "",
+    fullName: char.fullName || `${char.firstName} ${char.lastName}`.trim(),
+    
+    // Image and heraldry
     image: char.imageUrl || null,
-    titles: char.title || "Sin títulos",
-    family: char.family || "Casa desconocida",
-    born: char.born || "Desconocido",
+    
+    // Vital information
+    born: char.born || "Unknown",
     died: char.died || "N/A",
-    aliases: "N/A"
+    
+    // Titles and aliases (convert to arrays)
+    titles: char.title ? [char.title] : [],
+    aliases: [],
+    
+    // Family
+    family: char.family || "Unknown house",
+    allegiances: [],
+    
+    // Additional metadata
+    culture: "Unknown",
+    playedBy: [],
+    tvSeries: [],
+    
+    source: "ThronesAPI"
 });
 
-// Función para normalizar los datos de la API de Ice & Fire
-const mapIceFireCharacter = (char) => ({
-    fullName: char.name,
-    image: null, // Esta API no provee imágenes.
-    titles: char.titles.filter(t => t).join(', ') || "Sin títulos",
-    family: "N/A", // Esta API no provee este dato de forma directa.
-    born: char.born || "Desconocido",
-    died: char.died || "N/A",
-    aliases: char.aliases.filter(a => a).join(', ') || "Sin alias"
-});
+// Function to normalize data from the Ice & Fire API
+const mapIceFireCharacter = (char) => {
+    // Extract ID from character URL
+    const urlParts = char.url.split('/');
+    const apiId = urlParts[urlParts.length - 1];
+    
+    return {
+        // Basic information
+        id: null, // Will be assigned later
+        firstName: char.name ? char.name.split(' ')[0] : "Unknown",
+        lastName: char.name ? char.name.split(' ').slice(1).join(' ') : "",
+        fullName: char.name || `Unknown character #${apiId}`,
+        
+        // Image and heraldry
+        image: null, // This API doesn't provide images
+        
+        // Vital information
+        born: char.born || "Unknown",
+        died: char.died || "Alive",
+        
+        // Titles and aliases (complete arrays)
+        titles: char.titles && char.titles.length > 0 ? char.titles.filter(t => t) : [],
+        aliases: char.aliases && char.aliases.length > 0 ? char.aliases.filter(a => a) : [],
+        
+        // Family (extracted from allegiances if available)
+        family: char.allegiances && char.allegiances.length > 0 
+            ? "See allied houses" 
+            : "No known house",
+        allegiances: char.allegiances || [], // House URLs
+        
+        // Additional metadata
+        culture: char.culture || "Unknown",
+        playedBy: char.playedBy && char.playedBy.length > 0 ? char.playedBy : [],
+        tvSeries: char.tvSeries && char.tvSeries.length > 0 ? char.tvSeries : [],
+        
+        source: "IceAndFireAPI"
+    };
+};
 
 async function getMergedCharacters() {
     if (cachedCharacters) {
         return cachedCharacters;
     }
 
-    console.log("Obteniendo y fusionando datos de ambas APIs...");
+    console.log("Fetching and merging data from both APIs...");
     try {
-        // Obtenemos los datos de ambas fuentes en paralelo para más eficiencia
-        const [thronesResponse, iceFireResponse] = await Promise.all([
-            axios.get(URL_THRONES),
-            axios.get(`${URL_ICE_FIRE}?pageSize=50&page=1`) // Obtenemos un buen lote inicial
-        ]);
+        // Get ALL available pages from Ice & Fire API
+        const thronesResponse = await axios.get(URL_THRONES);
+        
+        // Ice & Fire API has multiple pages, we need to get them all
+        let allIceFireChars = [];
+        let page = 1;
+        let hasMorePages = true;
+        
+        while (hasMorePages) {
+            try {
+                const response = await axios.get(`${URL_ICE_FIRE}?pageSize=50&page=${page}`);
+                if (response.data.length > 0) {
+                    allIceFireChars = allIceFireChars.concat(response.data);
+                    page++;
+                    console.log(`Page ${page - 1} loaded: ${response.data.length} characters`);
+                } else {
+                    hasMorePages = false;
+                }
+            } catch (error) {
+                console.log(`No more pages available. Total pages: ${page - 1}`);
+                hasMorePages = false;
+            }
+        }
         
         const thronesChars = thronesResponse.data.map(mapThronesCharacter);
-        const iceFireChars = iceFireResponse.data.filter(c => c.name).map(mapIceFireCharacter);
+        const iceFireChars = allIceFireChars.map(mapIceFireCharacter);
 
-        // Usamos un Map para dar prioridad a los datos de ThronesAPI y evitar duplicados
+        // Use a Map to prioritize ThronesAPI data and avoid duplicates
         const characterMap = new Map();
 
-        // 1. Añadimos todos los de ThronesAPI primero, ya que son más completos
+        // 1. Add all from ThronesAPI first, as they are more complete
         thronesChars.forEach(char => characterMap.set(char.fullName.toLowerCase(), char));
 
-        // 2. Añadimos los de Ice&Fire SOLO si no existen ya en el mapa
+        // 2. Add Ice&Fire characters ONLY if they don't already exist in the map
         iceFireChars.forEach(char => {
             if (!characterMap.has(char.fullName.toLowerCase())) {
                 characterMap.set(char.fullName.toLowerCase(), char);
             }
         });
         
-        // Convertimos el mapa de nuevo a un array y le asignamos un ID secuencial
+        // Convert the map back to an array and assign a sequential ID
         cachedCharacters = Array.from(characterMap.values()).map((char, index) => ({
             ...char,
             id: index + 1
         }));
 
-        console.log(`Proceso completado. Total de personajes únicos: ${cachedCharacters.length}`);
+        console.log(`Process complete, character count: ${cachedCharacters.length}`);
         return cachedCharacters;
 
     } catch (error) {
-        console.error(`Error crítico al obtener y fusionar datos: ${error.message}`);
-        return []; // Devolvemos un array vacío en caso de error.
+        console.error(`Critical error: ${error.message}`);
+        return []; // Return an empty array in case of error
     }
 }
 
-// --- Iniciar el Servidor ---
+// --- Start the Server ---
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:${PORT}`);
-    getMergedCharacters(); // Precargamos los datos.
+    console.log(`Server listening on http://localhost:${PORT}`);
+    getMergedCharacters(); // Preload the data
 });
-
